@@ -1,0 +1,67 @@
+<?php
+session_start();
+include 'koneksi.php';
+
+$error = '';
+
+if (isset($_POST['login'])) {
+    $email    = mysqli_real_escape_string($koneksi, $_POST['email']);
+    $password = $_POST['password'];
+
+    $result = mysqli_query($koneksi, "SELECT * FROM users WHERE email = '$email'");
+    if (mysqli_num_rows($result) === 1) {
+        $user = mysqli_fetch_assoc($result);
+        if (password_verify($password, $user['password'])) {
+            // Simpan data user ke Session
+            $_SESSION['user_login'] = true;
+            $_SESSION['user_id']    = $user['id_user'];
+            $_SESSION['user_nama']  = $user['nama'];
+
+            $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+            header("Location: $redirect");
+            exit;
+        }
+    }
+    $error = "Email atau password salah!";
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Mamah Catering</title>
+    <style>
+        body { font-family: sans-serif; background: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #e2e8f0; width: 100%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: #0f172a; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #334155; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 10px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .btn:hover { background: #2563eb; }
+        .alert-error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 15px; }
+        p { font-size: 13px; text-align: center; margin-top: 15px; color: #64748b; }
+        a { color: #3b82f6; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Login Pelanggan</h2>
+    <?php if ($error): ?><div class="alert-error"><?= $error; ?></div><?php endif; ?>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="email@contoh.com">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required placeholder="Masukkan password">
+        </div>
+        <button type="submit" name="login" class="btn">Masuk</button>
+    </form>
+    <p>Belum punya akun? <a href="register.php">Daftar di sini</a></p>
+</div>
+</body>
+</html>
